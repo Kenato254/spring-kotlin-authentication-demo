@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: SpringKotlinAuthentication
+
+  profiles:
+    active: dev
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+management:
+  server:
+    port: 8090
