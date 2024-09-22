@@ -5,6 +5,8 @@
 *.jar
 *.sw?
 *~
+.idea/
+logs/
 .#*
 .*.md.html
 .DS_Store
@@ -42,3 +44,4 @@ secrets.yml
 .git-hooks/
 node_modules
 .env
+application-prod.yml

@@ -13,11 +13,11 @@ import io.swagger.v3.oas.annotations.servers.Server
             email = "kendygitonga@gmail.com",
             url = "https://github.com/Kenato254/spring-kotlin-authentication-demo"
         ),
-        description = "A demo project showcasing skills in building secure, token-based authentication systems using Spring Boot, Kotlin, and JWT. The project follows best practices for security and demonstrates practical use of modern development tools.",
+        description = "A demo project showcasing secure, token-based authentication with Spring Boot, Kotlin, and JWT, running on a free-tier EC2 instance.",
         title = "Spring Boot Kotlin Authentication API",
         version = "1.0.0",
         license = License(name = "MIT License", url = "https://opensource.org/licenses/MIT"),
-        termsOfService = "https://github.com/Kenato254/spring-kotlin-authentication-demo/blob/main/TERMS.md"
+//        termsOfService = "https://github.com/Kenato254/spring-kotlin-authentication-demo/blob/main/TERMS.md"
     ),
     servers = [Server(description = "Development Server", url = "http://localhost:8080/api")]
 )

@@ -3,10 +3,7 @@ package com.springKotlinAuthentication.demo.authentication.service
 import com.springKotlinAuthentication.demo.authentication.UserUtil
 import com.springKotlinAuthentication.demo.authentication.authorization.Role
 import com.springKotlinAuthentication.demo.authentication.constant.Constant
-import com.springKotlinAuthentication.demo.authentication.dto.request.ChangePasswordRequest
-import com.springKotlinAuthentication.demo.authentication.dto.request.LoginRequest
-import com.springKotlinAuthentication.demo.authentication.dto.request.RegisterRequest
-import com.springKotlinAuthentication.demo.authentication.dto.request.ResetPasswordRequest
+import com.springKotlinAuthentication.demo.authentication.dto.request.*
 import com.springKotlinAuthentication.demo.authentication.dto.response.LoginResponse
 import com.springKotlinAuthentication.demo.authentication.dto.response.RegisterResponse
 import com.springKotlinAuthentication.demo.authentication.dto.response.UserResponse
@@ -58,6 +55,30 @@ class AuthenticationServiceImpl(
         return UserUtil.userToUserResponse(user)
     }
 
+    override fun updateUserById(userId: UUID, request: UpdateUserRequest, accessToken: String): UserResponse {
+        TODO("Not yet implemented")
+    }
+
+    override fun deleteUserById(userId: UUID, accessToken: String): UserResponse {
+        val user = userRepository.findById(userId)
+            .orElseThrow { UsernameNotFoundException(String.format(Constant.USER_NOT_FOUND, userId)) }
+
+        val authentication = SecurityContextHolder.getContext().authentication
+        if (authentication?.principal !is User) {
+            throw UnauthenticatedUserException(Constant.AUTH_USER_NOT_AUTHENTICATED)
+        }
+        val userRequesting = authentication.principal as User
+
+        if (userRequesting != user && userRequesting.role != Role.ADMIN) {
+            throw ForbiddenAccessException(
+                String.format(Constant.AUTH_ACCESS_DENIED, userRequesting.email)
+            )
+        }
+
+        userRepository.delete(user)
+        return UserUtil.userToUserResponse(user)
+    }
+
     @Transactional
     override fun registerUser(request: RegisterRequest): RegisterResponse {
         val email = request.email
@@ -75,22 +96,20 @@ class AuthenticationServiceImpl(
                 password = passwordHash,
                 firstName = request.firstName!!,
                 lastName = request.lastName!!,
-                dataOfBirth = request.dateOfBirth!!
+                dateOfBirth = request.dateOfBirth!!
             )
         )
 
-        val confirmationToken =
-            confirmationTokenService.saveConfirmationToken(
-                ConfirmationToken(
-                    token = UUID.randomUUID().toString(),
-                    user = user,
-                    expiresAt = Instant.now().plus(10, ChronoUnit.MINUTES),
-                )
-            )
+        val confirmationToken = ConfirmationToken(
+            token = UUID.randomUUID().toString(),
+            user = user,
+            expiresAt = Instant.now().plus(10, ChronoUnit.MINUTES),
+        )
+        val savedConfirmationToken = confirmationTokenService.saveConfirmationToken(confirmationToken)
 
-        //TODO: Send Email
+        // Send Email
         return UserUtil.confirmationTokenToRegisterResponse(
-            confirmationToken
+            savedConfirmationToken
         )
     }
 

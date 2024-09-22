@@ -1,6 +1,5 @@
 package com.springKotlinAuthentication.demo.authentication.entity
 
-import com.springKotlinAuthentication.demo.authentication.aop.AopUtil
 import com.springKotlinAuthentication.demo.authentication.authorization.Role
 import jakarta.persistence.*
 import org.springframework.security.core.GrantedAuthority
@@ -31,7 +30,7 @@ data class User(
     var lastName: String,
 
     @Column(name = "date_of_birth", nullable = false)
-    val dataOfBirth: LocalDate,
+    val dateOfBirth: LocalDate,
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -58,7 +57,7 @@ data class User(
 
     @PreUpdate
     fun onUpdate() {
-        this.updatedAt = Instant.now()
+        updatedAt = Instant.now()
     }
 
     companion object {
@@ -81,11 +80,11 @@ data class User(
     }
 
     override fun getPassword(): String {
-        return this.password
+        return password
     }
 
     override fun getUsername(): String {
-        return this.email
+        return email
     }
 
     override fun isAccountNonExpired(): Boolean {

@@ -32,6 +32,8 @@ class JwtAuthenticationFilter(
             "/api/auth/register",
             "/api/auth/confirm/**",
 
+            "/actuator/**",
+
             "/api/v2/api-docs",
             "/api/v3/api-docs",
             "/api/v3/api-docs/**",
@@ -88,7 +90,6 @@ class JwtAuthenticationFilter(
             val userTokenPair: Pair<UserDetails, String> =
                 jwtService.extractUserDetailFromRequest(request)
             val user = userTokenPair.first
-            val token = userTokenPair.second
 
             val authToken = UsernamePasswordAuthenticationToken(
                 user, null, user.authorities

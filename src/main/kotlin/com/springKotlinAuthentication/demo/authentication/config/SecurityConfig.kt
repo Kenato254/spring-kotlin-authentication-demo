@@ -32,6 +32,9 @@ class SecurityConfig(
             "/auth/register",
             "/auth/confirm/**",
 
+            // Health
+            "/actuator/**",
+
             // OpenAPI
             "/v2/api-docs",
             "/v3/api-docs",

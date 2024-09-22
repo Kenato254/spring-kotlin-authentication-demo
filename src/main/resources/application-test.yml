@@ -1,0 +1,33 @@
+logging:
+  level:
+    org:
+      springframework:
+        security: debug
+        web: debug
+        orm: debug
+    com:
+      springKotlinAuthentication: debug
+
+spring:
+  security:
+    jwt:
+      secret-key: sdfkgekgjqerltjhqwerltkjerglkjqewrlktjqertl
+      expiration: 00000000
+      refresh-token:
+        expiration: 000000000000
+
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: true
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true

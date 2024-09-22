@@ -10,7 +10,7 @@ data class ConfirmationToken(
     var id: Long = 0,
 
     @Column(nullable = false)
-    val token: String,
+    var token: String,
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, name = "user_id")

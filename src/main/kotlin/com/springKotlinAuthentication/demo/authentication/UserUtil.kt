@@ -15,7 +15,7 @@ object UserUtil {
             id = user.id!!,
             firstName = user.firstName,
             lastName = user.lastName,
-            dob = user.dataOfBirth.toString(),
+            dob = user.dateOfBirth.toString(),
             createdAt = user.createdAt.toString()
         )
     }

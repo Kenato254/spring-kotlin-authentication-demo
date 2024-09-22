@@ -1,9 +1,17 @@
 logging:
   level:
     org:
-      springframework:
-        security: info
-    web: info
+      springframework: DEBUG
+    com:
+      springKotlinAuthentication: DEBUG
+    web: DEBUG
+  pattern:
+    console:
+      color: true
+      date-time: "yyyy-MM-dd HH:mm:ss"
+      level: "%5p"
+      logger: "%c"
+      message: "%m%n"
 
 spring:
   security:
@@ -26,7 +34,3 @@ spring:
     hibernate:
       ddl-auto: create-drop
     generate-ddl: true
-    show-sql: true
-    properties:
-      hibernate:
-        format_sql: true

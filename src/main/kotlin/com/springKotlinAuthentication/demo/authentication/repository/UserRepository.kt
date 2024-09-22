@@ -11,7 +11,10 @@ import java.util.*
 interface UserRepository : JpaRepository<User, UUID> {
     fun findByEmail(email: String): User?
 
-    @Query("SELECT u FROM users u WHERE u.dataOfBirth = :dob ORDER BY u.dataOfBirth DESC")
+    @Query(
+        "SELECT u FROM users u WHERE u.date_of_birth = :dob ORDER BY u.date_of_birth DESC",
+        nativeQuery = true
+    )
     fun findByDob(dob: LocalDate): List<User>
 
     @Query("SELECT COUNT(u) > 0 FROM users u WHERE u.email = :email")

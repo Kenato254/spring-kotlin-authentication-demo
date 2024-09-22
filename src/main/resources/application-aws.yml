@@ -1,0 +1,41 @@
+logging:
+  level:
+    root: WARN
+    org:
+      springframework: WARN
+    com:
+      springKotlinAuthentication: INFO
+    web: WARN
+  pattern:
+    console:
+      color: false
+      date-time: "yyyy-MM-dd HH:mm:ss"
+      level: "%5p"
+      logger: "%c"
+      message: "%m%n"
+
+  file:
+    name: logs/application.log
+    max-size: 10MB
+    max-history: 30
+
+spring:
+  security:
+    jwt:
+      secret-key: ${SECRET_KEY}
+      expiration: 1800000
+      refresh-token:
+        expiration: 1209600000
+
+  datasource:
+    url: jdbc:mysql://${MYSQL_URL}:3306/demo_db?useSSL=false&allowPublicKeyRetrieval=true
+    username: ${MYSQL_USER}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+    hikari:
+      maximum-pool-size: 30
+
+  jpa:
+    hibernate:
+      ddl-auto: update
