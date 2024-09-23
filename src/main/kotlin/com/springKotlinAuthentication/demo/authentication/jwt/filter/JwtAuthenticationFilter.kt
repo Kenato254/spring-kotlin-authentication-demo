@@ -13,7 +13,6 @@ import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
 import org.springframework.stereotype.Component
@@ -87,16 +86,14 @@ class JwtAuthenticationFilter(
         }
 
         try {
-            val userTokenPair: Pair<UserDetails, String> =
-                jwtService.extractUserDetailFromRequest(request)
-            val user = userTokenPair.first
-
-            val authToken = UsernamePasswordAuthenticationToken(
-                user, null, user.authorities
-            )
-            authToken.details = WebAuthenticationDetailsSource().buildDetails(request)
-            SecurityContextHolder.getContext().authentication = authToken
-
+            val userDetails = jwtService.extractUserDetailFromRequest(request).first
+            if (SecurityContextHolder.getContext().authentication == null) {
+                val authentication = UsernamePasswordAuthenticationToken(
+                    userDetails, null, userDetails.authorities
+                )
+                authentication.details = WebAuthenticationDetailsSource().buildDetails(request)
+                SecurityContextHolder.getContext().authentication = authentication
+            }
         } catch (ex: ExpiredJwtException) {
             servletErrorResponseManager(Constant.JWT_EXPIRED, response)
             return

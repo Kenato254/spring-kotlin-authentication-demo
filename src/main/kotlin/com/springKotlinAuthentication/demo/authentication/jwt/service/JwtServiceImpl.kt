@@ -15,7 +15,6 @@ import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpHeaders
-import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -39,29 +38,29 @@ class JwtServiceImpl(
         get() = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtProperties.jwtSecret))
 
     override fun generateToken(
-        extraClaims: Map<String,Role?>,
+        extraClaims: Map<String, Role?>,
         user: User
     ): String? {
         return buildToken(extraClaims, user, jwtProperties.jwtExpiration)
     }
 
     override fun generateRefreshToken(
-        extraClaims: Map<String,Role?>,
+        extraClaims: Map<String, Role?>,
         user: User
     ): String {
         return buildToken(extraClaims, user, jwtProperties.refreshTokenExpiration)
     }
 
     private fun buildToken(
-        extraClaims: Map<String,Role?>?,
+        extraClaims: Map<String, Role?>?,
         user: User,
         expiration: Long
     ): String {
         return Jwts.builder()
             .header().add(mapOf("typ" to "Bearer")).and()
-            .subject(user.id.toString())
+            .subject(user.email)
             .claim("name", user.getFullName())
-            .claim("email", user.username)
+            .claim("id", user.id.toString())
             .claims(extraClaims)
             .issuedAt(Date())
             .expiration(Date(System.currentTimeMillis() + expiration))

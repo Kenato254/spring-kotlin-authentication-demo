@@ -97,13 +97,19 @@ class AuthenticationServiceImpl(
     }
 
     @Transactional
-    override fun changePassword(accessToken: String, request: ChangePasswordRequest): UserResponse {
+    override fun changePassword(request: ChangePasswordRequest): UserResponse {
         val authentication = SecurityContextHolder.getContext().authentication
-        if (authentication?.principal !is User) {
+
+        if (!authentication.isAuthenticated) {
             throw UnauthenticatedUserException(Constant.AUTH_USER_NOT_AUTHENTICATED)
         }
+        val principal = authentication.principal
+                as org.springframework.security.core.userdetails.User
 
-        val user = authentication.principal as User
+        val user = userRepository.findByEmail(principal.username)
+            ?: throw UsernameNotFoundException(
+                String.format(Constant.USER_NOT_FOUND, principal.username)
+            )
 
         requireNotNull(request.oldPassword) { "Old password must not be null" }
         if (!user.checkPassword(request.oldPassword)) {
@@ -115,8 +121,8 @@ class AuthenticationServiceImpl(
         }
 
         user.password = requireNotNull(request.newPassword) { "New password must not be null" }
-
         userRepository.save(user)
+
         return UserUtil.userToUserResponse(user)
     }
 
@@ -129,8 +135,6 @@ class AuthenticationServiceImpl(
         if (!authentication.isAuthenticated) {
             throw UnauthenticatedUserException(Constant.AUTHENTICATION_FAILED)
         }
-
-        SecurityContextHolder.getContext().authentication = authentication
 
         val principal = authentication.principal as org.springframework.security.core.userdetails.User
         val user = userRepository.findByEmail(principal.username)
@@ -175,7 +179,7 @@ class AuthenticationServiceImpl(
     }
 
     @Transactional(readOnly = true)
-    override fun getAllUsers(accessToken: String): List<UserResponse> {
+    override fun getAllUsers(): List<UserResponse> {
         val sort = Sort.by(Sort.Direction.DESC, "createdAt")
         return userRepository.findAll(sort)
             .map { user -> UserUtil.userToUserResponse(user) }

@@ -16,10 +16,13 @@ import com.springKotlinAuthentication.demo.authentication.repository.UserReposit
 import io.mockk.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.core.Authentication
+import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UsernameNotFoundException
+import org.springframework.test.context.ActiveProfiles
 import java.time.Instant
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
@@ -28,6 +31,7 @@ import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import org.springframework.security.core.userdetails.User as SecuredUser
 
+@ActiveProfiles("test")
 class AuthenticationServiceImplTest {
 
     private lateinit var authenticationService: AuthenticationServiceImpl
@@ -152,39 +156,47 @@ class AuthenticationServiceImplTest {
             newPassword = "newPassword123",
             confirmNewPassword = "newPassword123"
         )
+        mockkStatic(SecurityContextHolder::class)
+        val authentication = mockk<Authentication>()
+        every { SecurityContextHolder.getContext().authentication } returns authentication
+        every { authentication.isAuthenticated } returns true
 
+        val principal = mockk<SecuredUser>()
+        every { authentication.principal } returns principal
+
+        val username = "email"
         val user = mockk<User>(relaxed = true)
+        every { principal.username } returns username
+        every { userRepository.findByEmail(username) } returns user
+
         every { user.checkPassword("oldPassword123") } returns true
         every { userRepository.save(user) } returns user
         every { user.password = request.newPassword!! } just Runs
-
-        val authentication = mockk<Authentication> {
-            every { principal } returns user
-        }
-        SecurityContextHolder.getContext().authentication = authentication
 
         val userResponse = mockk<UserResponse>()
         mockkObject(UserUtil)
         every { UserUtil.userToUserResponse(user) } returns userResponse
 
-        val result = authenticationService.changePassword("accessToken", request)
+        val result = authenticationService.changePassword(request)
 
         assertEquals(userResponse, result)
         verify { userRepository.save(user) }
     }
 
     @Test
-    fun `changePassword should throw UnauthenticatedUserException when not authenticated`() {
+    fun `changePassword should throw UnauthenticatedUserException when user is not authenticated`() {
         val request = ChangePasswordRequest(
             oldPassword = "oldPassword123",
             newPassword = "newPassword123",
             confirmNewPassword = "newPassword123"
         )
-        val authentication = null
-        SecurityContextHolder.getContext().authentication = authentication
+        mockkStatic(SecurityContextHolder::class)
+        val authentication = mockk<Authentication>()
+        every { SecurityContextHolder.getContext().authentication } returns authentication
+        every { authentication.isAuthenticated } returns false
 
         assertFailsWith<UnauthenticatedUserException> {
-            authenticationService.changePassword("accessToken", request)
+            authenticationService.changePassword(request)
         }
     }
 
@@ -195,17 +207,23 @@ class AuthenticationServiceImplTest {
             newPassword = "newPassword123",
             confirmNewPassword = "newPassword123"
         )
+        mockkStatic(SecurityContextHolder::class)
+        val authentication = mockk<Authentication>()
+        every { SecurityContextHolder.getContext().authentication } returns authentication
+        every { authentication.isAuthenticated } returns true
 
+        val principal = mockk<SecuredUser>()
+        every { authentication.principal } returns principal
+
+        val username = "email"
         val user = mockk<User>(relaxed = true)
-        every { user.checkPassword("invalidPassword") } returns false
+        every { principal.username } returns username
+        every { userRepository.findByEmail(username) } returns user
 
-        val authentication = mockk<Authentication> {
-            every { principal } returns user
-        }
-        SecurityContextHolder.getContext().authentication = authentication
+        every { user.checkPassword("oldPassword123") } returns true
 
         assertFailsWith<IllegalStateException> {
-            authenticationService.changePassword("accessToken", request)
+            authenticationService.changePassword(request)
         }
     }
 
@@ -216,13 +234,13 @@ class AuthenticationServiceImplTest {
         val authentication = mockk<Authentication>()
         every { authenticationManager.authenticate(any()) } returns authentication
         every { authentication.isAuthenticated } returns true
-        SecurityContextHolder.getContext().authentication = authentication
 
-        val principal = mockk<SecuredUser>(relaxed = true)
-        every { authentication.principal } returns principal
+        every { authentication.principal } returns mockk<SecuredUser> {
+            every { username } returns "email"
+        }
 
         val user = mockk<User>(relaxed = true)
-        every { userRepository.findByEmail(principal.username) } returns user
+        every { userRepository.findByEmail("email") } returns user
 
         val claims = mapOf("roles" to user.role)
         val accessToken = "accessToken"
@@ -245,7 +263,7 @@ class AuthenticationServiceImplTest {
         verify {
             authenticationManager.authenticate(any())
             authentication.isAuthenticated
-            userRepository.findByEmail(principal.username)
+            userRepository.findByEmail("email")
             jwtService.generateToken(claims, user)
             jwtService.generateRefreshToken(claims, user)
             jwtService.saveRefreshToken(user, refreshToken)
@@ -259,13 +277,13 @@ class AuthenticationServiceImplTest {
         val authentication = mockk<Authentication>()
         every { authenticationManager.authenticate(any()) } returns authentication
         every { authentication.isAuthenticated } returns true
-        SecurityContextHolder.getContext().authentication = authentication
 
-        val principal = mockk<SecuredUser>(relaxed = true)
-        every { authentication.principal } returns principal
+        every { authentication.principal } returns mockk<SecuredUser> {
+            every { username } returns  "email"
+        }
 
         val user = mockk<User>(relaxed = true)
-        every { userRepository.findByEmail(principal.username) } returns user
+        every { userRepository.findByEmail("email") } returns user
 
         val claims = mapOf("roles" to user.role)
         every { jwtService.generateToken(claims, user) } returns "accessToken"

@@ -176,7 +176,7 @@ class AuthenticationController(
         @Body(description = "Request body containing new password details", required = true)
         @RequestBody @Validated request: ChangePasswordRequest
     ): ResponseEntity<Api<UserResponse>> {
-        val userResponse = authenticationService.changePassword(token, request)
+        val userResponse = authenticationService.changePassword(request)
         val response = Api.ok(userResponse, "Password change successful")
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(response)
     }
@@ -192,7 +192,7 @@ class AuthenticationController(
         @Parameter(description = "Authorization token for accessing the user list", required = true)
         @RequestHeader("Authorization") accessToken: String
     ): ResponseEntity<Api<List<UserResponse>>> {
-        val userResponses = authenticationService.getAllUsers(accessToken)
+        val userResponses = authenticationService.getAllUsers()
         val response = Api.ok(userResponses, "List of users")
         return ResponseEntity.ok(response)
     }

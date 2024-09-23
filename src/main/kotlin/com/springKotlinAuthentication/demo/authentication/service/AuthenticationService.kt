@@ -15,7 +15,7 @@ interface AuthenticationService {
     fun updateUserById(userId: UUID, request: UpdateUserRequest): UserResponse
     fun deleteUserById(userId: UUID): UserResponse
     fun resetPassword(request: ResetPasswordRequest): UserResponse
-    fun changePassword(accessToken: String, request: ChangePasswordRequest): UserResponse
+    fun changePassword(request: ChangePasswordRequest): UserResponse
     fun listUsersByDob(dob: LocalDate): List<UserResponse>
-    fun getAllUsers(accessToken: String): List<UserResponse>
+    fun getAllUsers(): List<UserResponse>
 }
