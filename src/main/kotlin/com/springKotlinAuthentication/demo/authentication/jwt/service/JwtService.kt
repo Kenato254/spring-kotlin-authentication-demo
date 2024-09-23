@@ -5,6 +5,7 @@ import com.springKotlinAuthentication.demo.authentication.entity.User
 import com.springKotlinAuthentication.demo.authentication.jwt.entity.Token
 import io.jsonwebtoken.Claims
 import jakarta.servlet.http.HttpServletRequest
+import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 import java.util.*
 import java.util.function.Function
@@ -12,7 +13,7 @@ import java.util.function.Function
 interface JwtService {
     fun generateToken(
         extraClaims: Map<String, Role?>,
-        userDetails: UserDetails
+        user: User
     ): String?
 
     val expiresIn: Long?
@@ -20,7 +21,7 @@ interface JwtService {
 
     fun generateRefreshToken(
         extraClaims: Map<String, Role?>,
-        userDetails: UserDetails
+        user: User
     ): String?
 
     fun isTokenValid(token: String): Boolean
@@ -51,7 +52,7 @@ interface JwtService {
         request: HttpServletRequest
     ): Pair<UserDetails, String>
 
-    fun saveRefreshToken(user: User, token: String)
+    fun saveRefreshToken(user: UserDetails, token: String)
 
     fun getTokenByUser(user: User): Token?
 

@@ -11,6 +11,7 @@ object Constant {
 
     // Authentication Errors
     const val AUTH_USER_NOT_AUTHENTICATED = "User authentication required."
+    const val AUTHENTICATION_FAILED = "User authentication failed."
     const val AUTH_ACCESS_DENIED = "Access denied for this [%s]."
     const val AUTH_ACCOUNT_DISABLED = "Your account has been disabled and is not yet activated. " +
             "Please check your email for activation instructions or contact support if you believe this is a mistake."

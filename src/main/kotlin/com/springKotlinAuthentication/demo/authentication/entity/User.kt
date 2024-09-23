@@ -75,6 +75,8 @@ data class User(
         return Companion.passwordEncoder.matches(password, this.password)
     }
 
+    fun getFullName(): String = "$firstName $lastName"
+
     override fun getAuthorities(): Collection<GrantedAuthority> {
         return mutableListOf(SimpleGrantedAuthority(role.name))
     }

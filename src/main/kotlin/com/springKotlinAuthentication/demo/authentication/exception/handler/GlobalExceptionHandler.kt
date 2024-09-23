@@ -18,9 +18,19 @@ import org.springframework.security.authentication.DisabledException
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.servlet.resource.NoResourceFoundException
 
 @RestControllerAdvice
 class GlobalExceptionHandler {
+
+    @ExceptionHandler(NoResourceFoundException::class)
+    fun handleNoResourceFoundExceptions(e: NoResourceFoundException): ResponseEntity<Api<Any>> {
+        val errorResponse = Api.error<Any>(
+            message = e.message ?: Constant.ENTITY_NOT_FOUND,
+            errorStatus = ErrorStatus.NOT_FOUND
+        )
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorResponse)
+    }
 
     @ExceptionHandler(EntityNotFoundException::class)
     fun handleEntityNotFoundExceptions(e: EntityNotFoundException): ResponseEntity<Api<Any>> {

@@ -5,14 +5,14 @@ import jakarta.validation.constraints.Size
 
 data class ChangePasswordRequest(
     @field:NotBlank(message = "Old password cannot be blank")
-    val oldPassword: String,
+    val oldPassword: String?,
 
     @field:NotBlank(message = "New password cannot be blank")
     @field:Size(
         min = 8,
         max = 128,
         message = "New password must be at least {min} characters long"
-    ) val newPassword: String,
+    ) val newPassword: String?,
 
 
     @field:NotBlank(message = "Confirm new password cannot be blank")
@@ -20,7 +20,7 @@ data class ChangePasswordRequest(
         min = 8,
         max = 128,
         message = "New password must be at least {min} characters long"
-    ) val confirmNewPassword: String
+    ) val confirmNewPassword: String?
 ) {
     fun isPasswordConfirmed(): Boolean = newPassword == confirmNewPassword
 }

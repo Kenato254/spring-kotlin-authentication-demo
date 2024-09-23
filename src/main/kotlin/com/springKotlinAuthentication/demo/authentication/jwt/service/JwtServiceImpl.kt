@@ -15,6 +15,7 @@ import io.jsonwebtoken.io.Decoders
 import io.jsonwebtoken.security.Keys
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.http.HttpHeaders
+import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -38,26 +39,29 @@ class JwtServiceImpl(
         get() = Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtProperties.jwtSecret))
 
     override fun generateToken(
-        extraClaims: Map<String, Role?>,
-        userDetails: UserDetails
-    ): String {
-        return buildToken(extraClaims, userDetails, jwtProperties.jwtExpiration)
+        extraClaims: Map<String,Role?>,
+        user: User
+    ): String? {
+        return buildToken(extraClaims, user, jwtProperties.jwtExpiration)
     }
 
     override fun generateRefreshToken(
-        extraClaims: Map<String, Role?>,
-        userDetails: UserDetails
+        extraClaims: Map<String,Role?>,
+        user: User
     ): String {
-        return buildToken(extraClaims, userDetails, jwtProperties.refreshTokenExpiration)
+        return buildToken(extraClaims, user, jwtProperties.refreshTokenExpiration)
     }
 
     private fun buildToken(
-        extraClaims: Map<String, Role?>?,
-        userDetails: UserDetails,
+        extraClaims: Map<String,Role?>?,
+        user: User,
         expiration: Long
     ): String {
         return Jwts.builder()
-            .subject(userDetails.username)
+            .header().add(mapOf("typ" to "Bearer")).and()
+            .subject(user.id.toString())
+            .claim("name", user.getFullName())
+            .claim("email", user.username)
             .claims(extraClaims)
             .issuedAt(Date())
             .expiration(Date(System.currentTimeMillis() + expiration))
@@ -132,10 +136,10 @@ class JwtServiceImpl(
     override fun refreshToken(request: HttpServletRequest): String? {
         val userDetails = extractUserDetailFromRequest(request).first
         val token = extractUserDetailFromRequest(request).second
-        val role = (userDetails as User).role
+        val roles = (userDetails as User).role
 
         return if (isTokenUserValid(userDetails, token)) {
-            generateToken(mapOf("role" to role), userDetails)
+            generateToken(mapOf("roles" to roles), userDetails)
         } else {
             null
         }
@@ -164,10 +168,11 @@ class JwtServiceImpl(
     }
 
     @Transactional
-    override fun saveRefreshToken(user: User, token: String) {
+    override fun saveRefreshToken(user: UserDetails, token: String) {
+        val userEntity = customUserDetailService.loadUserByEmail(user.username)
         val tokenHash = Token.encryptToken(token)
         tokenRepository.save(
-            Token(token = tokenHash, user = user)
+            Token(token = tokenHash, user = userEntity)
         )
     }
 

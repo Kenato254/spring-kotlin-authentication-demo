@@ -11,9 +11,9 @@ interface AuthenticationService {
     fun registerUser(request: RegisterRequest): RegisterResponse
     fun loginUser(request: LoginRequest): LoginResponse
     fun confirmUser(confirmationToken: String)
-    fun readUserById(userId: UUID, accessToken: String): UserResponse
-    fun updateUserById(userId: UUID, request: UpdateUserRequest, accessToken: String): UserResponse
-    fun deleteUserById(userId: UUID, accessToken: String): UserResponse
+    fun readUserById(userId: UUID): UserResponse
+    fun updateUserById(userId: UUID, request: UpdateUserRequest): UserResponse
+    fun deleteUserById(userId: UUID): UserResponse
     fun resetPassword(request: ResetPasswordRequest): UserResponse
     fun changePassword(accessToken: String, request: ChangePasswordRequest): UserResponse
     fun listUsersByDob(dob: LocalDate): List<UserResponse>

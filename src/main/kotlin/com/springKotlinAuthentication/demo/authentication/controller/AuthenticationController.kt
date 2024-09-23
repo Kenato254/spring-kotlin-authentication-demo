@@ -57,7 +57,7 @@ class AuthenticationController(
         @Parameter(description = "Authorization token to access the API", required = true)
         @RequestHeader("Authorization") accessToken: String
     ): ResponseEntity<Api<UserResponse>> {
-        val userResponse = authenticationService.readUserById(id, accessToken)
+        val userResponse = authenticationService.readUserById(id)
         val response = Api.ok(userResponse, "Read user successful")
         return ResponseEntity.ok(response)
     }
@@ -84,7 +84,7 @@ class AuthenticationController(
         @Parameter(description = "Authorization token to access the API", required = true)
         @RequestHeader("Authorization") accessToken: String
     ): ResponseEntity<Api<UserResponse>> {
-        val userResponse = authenticationService.updateUserById(id, request, accessToken)
+        val userResponse = authenticationService.updateUserById(id, request)
         val response = Api.ok(userResponse, "Update user successful")
         return ResponseEntity.ok(response)
     }
@@ -105,7 +105,7 @@ class AuthenticationController(
         @Parameter(description = "Authorization token to access the API", required = true)
         @RequestHeader("Authorization") accessToken: String
     ): ResponseEntity<Api<UserResponse>> {
-        val userResponse = authenticationService.readUserById(id, accessToken)
+        val userResponse = authenticationService.readUserById(id)
         val response = Api.ok(userResponse, "Delete user successful")
         return ResponseEntity.ok(response)
     }

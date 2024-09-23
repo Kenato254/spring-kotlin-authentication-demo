@@ -3,7 +3,7 @@ spring:
     name: SpringKotlinAuthentication
 
   profiles:
-    active: aws
+    active: dev
 
 server:
   port: 8080

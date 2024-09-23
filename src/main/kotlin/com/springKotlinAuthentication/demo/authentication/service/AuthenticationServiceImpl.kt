@@ -1,7 +1,6 @@
 package com.springKotlinAuthentication.demo.authentication.service
 
 import com.springKotlinAuthentication.demo.authentication.UserUtil
-import com.springKotlinAuthentication.demo.authentication.authorization.Role
 import com.springKotlinAuthentication.demo.authentication.constant.Constant
 import com.springKotlinAuthentication.demo.authentication.dto.request.*
 import com.springKotlinAuthentication.demo.authentication.dto.response.LoginResponse
@@ -9,7 +8,6 @@ import com.springKotlinAuthentication.demo.authentication.dto.response.RegisterR
 import com.springKotlinAuthentication.demo.authentication.dto.response.UserResponse
 import com.springKotlinAuthentication.demo.authentication.entity.ConfirmationToken
 import com.springKotlinAuthentication.demo.authentication.entity.User
-import com.springKotlinAuthentication.demo.authentication.exception.execeptions.ForbiddenAccessException
 import com.springKotlinAuthentication.demo.authentication.exception.execeptions.UnauthenticatedUserException
 import com.springKotlinAuthentication.demo.authentication.exception.execeptions.UserAlreadyExistsException
 import com.springKotlinAuthentication.demo.authentication.jwt.service.JwtService
@@ -37,43 +35,22 @@ class AuthenticationServiceImpl(
 ) : AuthenticationService {
 
     @Transactional(readOnly = true)
-    override fun readUserById(userId: UUID, accessToken: String): UserResponse {
+    override fun readUserById(userId: UUID): UserResponse {
         val user = userRepository.findById(userId)
             .orElseThrow { UsernameNotFoundException(String.format(Constant.USER_NOT_FOUND, userId)) }
 
-        val authentication = SecurityContextHolder.getContext().authentication
-        if (authentication?.principal !is User) {
-            throw UnauthenticatedUserException(Constant.AUTH_USER_NOT_AUTHENTICATED)
-        }
-        val userRequesting = authentication.principal as User
-
-        if (userRequesting != user && userRequesting.role != Role.ADMIN) {
-            throw ForbiddenAccessException(
-                String.format(Constant.AUTH_ACCESS_DENIED, userRequesting.email)
-            )
-        }
         return UserUtil.userToUserResponse(user)
     }
 
-    override fun updateUserById(userId: UUID, request: UpdateUserRequest, accessToken: String): UserResponse {
+    @Transactional
+    override fun updateUserById(userId: UUID, request: UpdateUserRequest): UserResponse {
         TODO("Not yet implemented")
     }
 
-    override fun deleteUserById(userId: UUID, accessToken: String): UserResponse {
+    @Transactional
+    override fun deleteUserById(userId: UUID): UserResponse {
         val user = userRepository.findById(userId)
             .orElseThrow { UsernameNotFoundException(String.format(Constant.USER_NOT_FOUND, userId)) }
-
-        val authentication = SecurityContextHolder.getContext().authentication
-        if (authentication?.principal !is User) {
-            throw UnauthenticatedUserException(Constant.AUTH_USER_NOT_AUTHENTICATED)
-        }
-        val userRequesting = authentication.principal as User
-
-        if (userRequesting != user && userRequesting.role != Role.ADMIN) {
-            throw ForbiddenAccessException(
-                String.format(Constant.AUTH_ACCESS_DENIED, userRequesting.email)
-            )
-        }
 
         userRepository.delete(user)
         return UserUtil.userToUserResponse(user)
@@ -81,22 +58,23 @@ class AuthenticationServiceImpl(
 
     @Transactional
     override fun registerUser(request: RegisterRequest): RegisterResponse {
-        val email = request.email
-        if (userRepository.emailExists(email!!)) {
+        val email = requireNotNull(request.email) { "Email must not be null" }
+        if (userRepository.emailExists(email)) {
             throw UserAlreadyExistsException(
                 String.format(Constant.USER_ALREADY_EXISTS, email)
             )
         }
 
-        val passwordHash = User.encryptPassword(request.password!!)
+        requireNotNull(request.password) { "Password must not be null" }
+        val passwordHash = User.encryptPassword(request.password)
 
         val user = userRepository.save(
             User(
                 email = email,
                 password = passwordHash,
-                firstName = request.firstName!!,
-                lastName = request.lastName!!,
-                dateOfBirth = request.dateOfBirth!!
+                firstName = requireNotNull(request.firstName) { "First name must not be null" },
+                lastName = requireNotNull(request.lastName) { "Last name must not be null" },
+                dateOfBirth = requireNotNull(request.dateOfBirth) { "Date of birth must not be null" }
             )
         )
 
@@ -126,13 +104,17 @@ class AuthenticationServiceImpl(
         }
 
         val user = authentication.principal as User
+
+        requireNotNull(request.oldPassword) { "Old password must not be null" }
         if (!user.checkPassword(request.oldPassword)) {
             throw IllegalStateException(Constant.INVALID_OLD_PASSWORD)
         }
+
         if (!request.isPasswordConfirmed()) {
             throw IllegalStateException(Constant.PASSWORD_MISMATCH)
         }
-        user.password = request.newPassword
+
+        user.password = requireNotNull(request.newPassword) { "New password must not be null" }
 
         userRepository.save(user)
         return UserUtil.userToUserResponse(user)
@@ -140,19 +122,24 @@ class AuthenticationServiceImpl(
 
     @Transactional
     override fun loginUser(request: LoginRequest): LoginResponse {
-        val user =
-            customUserDetailService.loadUserByUsername(request.email) as User
-
         val authentication = authenticationManager.authenticate(
             UsernamePasswordAuthenticationToken(request.email, request.password)
         )
+
+        if (!authentication.isAuthenticated) {
+            throw UnauthenticatedUserException(Constant.AUTHENTICATION_FAILED)
+        }
+
         SecurityContextHolder.getContext().authentication = authentication
 
-        val claims = mapOf("role" to user.role)
+        val principal = authentication.principal as org.springframework.security.core.userdetails.User
+        val user = userRepository.findByEmail(principal.username)
+            ?: throw UsernameNotFoundException(String.format(Constant.USER_NOT_FOUND, principal.username))
+
+        val claims = mapOf("roles" to user.role)
         val accessToken = jwtService.generateToken(claims, user)
         val expiresIn = jwtService.expiresIn
         val tokenType = jwtService.tokenType
-        jwtService.revokeAllTokenByUser(user)
         val refreshToken = jwtService.generateRefreshToken(claims, user)
             ?: throw IllegalStateException(Constant.ILLEGAL_STATE)
 
@@ -172,7 +159,8 @@ class AuthenticationServiceImpl(
             throw IllegalStateException(Constant.CONFIRMATION_TOKEN_ALREADY_CONFIRMED)
         }
 
-        val user = userRepository.findById(token.user.id!!)
+        val userId = requireNotNull(token.user.id) { "User id must not be null" }
+        val user = userRepository.findById(userId)
             .orElseThrow {
                 EntityNotFoundException(String.format(Constant.USER_NOT_FOUND, token.user.id))
             }
