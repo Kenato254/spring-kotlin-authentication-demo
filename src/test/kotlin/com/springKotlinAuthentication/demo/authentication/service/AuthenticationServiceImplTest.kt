@@ -16,10 +16,8 @@ import com.springKotlinAuthentication.demo.authentication.repository.UserReposit
 import io.mockk.*
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.api.extension.ExtendWith
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.core.Authentication
-import org.springframework.security.core.context.SecurityContext
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.test.context.ActiveProfiles
@@ -131,7 +129,6 @@ class AuthenticationServiceImplTest {
         }
     }
 
-
     @Test
     fun `registerUser should throw UserAlreadyExistsException when email already exists`() {
         val registerRequest = RegisterRequest(
@@ -231,6 +228,8 @@ class AuthenticationServiceImplTest {
     fun `loginUser should return LoginResponse when authentication is successful`() {
         val request = LoginRequest(email = "john.doe@example.com", password = "password123")
 
+        every { userRepository.emailExists(any()) } returns true
+
         val authentication = mockk<Authentication>()
         every { authenticationManager.authenticate(any()) } returns authentication
         every { authentication.isAuthenticated } returns true
@@ -274,12 +273,14 @@ class AuthenticationServiceImplTest {
     fun `loginUser should throw IllegalStateException when refreshToken is null`() {
         val request = LoginRequest(email = "john.doe@example.com", password = "password123")
 
+        every { userRepository.emailExists(any()) } returns true
+
         val authentication = mockk<Authentication>()
         every { authenticationManager.authenticate(any()) } returns authentication
         every { authentication.isAuthenticated } returns true
 
         every { authentication.principal } returns mockk<SecuredUser> {
-            every { username } returns  "email"
+            every { username } returns "email"
         }
 
         val user = mockk<User>(relaxed = true)

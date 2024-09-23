@@ -12,7 +12,7 @@ data class ConfirmationToken(
     @Column(nullable = false)
     var token: String,
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
     @JoinColumn(nullable = false, name = "user_id")
     val user: User,
 

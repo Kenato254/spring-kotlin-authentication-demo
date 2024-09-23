@@ -19,7 +19,7 @@ data class Token(
     @Column(name = "is_revoked", nullable = false)
     var isRevoked: Boolean = false,
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = [CascadeType.REMOVE])
     @JoinColumn(name = "user_id", nullable = false)
     val user: User,
 

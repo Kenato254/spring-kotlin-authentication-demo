@@ -25,8 +25,8 @@ import org.springframework.context.annotation.Configuration
         termsOfService = "https://github.com/Kenato254/spring-kotlin-authentication-demo/blob/main/TERMS.md"
     ),
     servers = [
-        Server(description = "Local Development Server", url = "http://localhost:8080/api"),
-        Server(description = "EC2 Development Server", url = "http://54.224.246.132/api")
+        Server(description = "EC2 Development Server", url = "http://54.224.246.132/api"),
+        Server(description = "Local Development Server", url = "http://localhost:8080/api")
     ]
 )
 @SecurityScheme(

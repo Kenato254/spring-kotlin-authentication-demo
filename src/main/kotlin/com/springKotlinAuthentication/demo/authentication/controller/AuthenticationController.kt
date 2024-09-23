@@ -100,7 +100,7 @@ class AuthenticationController(
         @Parameter(description = "ID of the user to delete", required = true)
         @PathVariable id: UUID
     ): ResponseEntity<Api<UserResponse>> {
-        val userResponse = authenticationService.readUserById(id)
+        val userResponse = authenticationService.deleteUserById(id)
         val response = Api.ok(userResponse, "Delete user successful")
         return ResponseEntity.ok(response)
     }

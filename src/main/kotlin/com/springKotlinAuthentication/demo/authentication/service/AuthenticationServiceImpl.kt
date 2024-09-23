@@ -128,6 +128,12 @@ class AuthenticationServiceImpl(
 
     @Transactional
     override fun loginUser(request: LoginRequest): LoginResponse {
+        if (
+            !userRepository.emailExists(
+                requireNotNull(request.email) { "Email must not be null" })
+        ) {
+            throw UsernameNotFoundException(String.format(Constant.USER_NOT_FOUND, request.email))
+        }
         val authentication = authenticationManager.authenticate(
             UsernamePasswordAuthenticationToken(request.email, request.password)
         )
