@@ -9,6 +9,7 @@ import com.springKotlinAuthentication.demo.authentication.service.Authentication
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import io.swagger.v3.oas.annotations.security.SecurityRequirement
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.validation.FieldError
@@ -49,13 +50,11 @@ class AuthenticationController(
     @ApiResponse(responseCode = "403", description = "Forbidden")
     @ApiResponse(responseCode = "404", description = "User not found")
     @ApiResponse(responseCode = "500", description = "Internal server error")
+    @SecurityRequirement(name = "Bearer Authentication")
     @GetMapping("users/{id}")
     fun readUser(
         @Parameter(description = "ID of the user to retrieve", required = true)
-        @PathVariable id: UUID,
-
-        @Parameter(description = "Authorization token to access the API", required = true)
-        @RequestHeader("Authorization") accessToken: String
+        @PathVariable id: UUID
     ): ResponseEntity<Api<UserResponse>> {
         val userResponse = authenticationService.readUserById(id)
         val response = Api.ok(userResponse, "Read user successful")
@@ -70,6 +69,7 @@ class AuthenticationController(
     @ApiResponse(responseCode = "403", description = "Forbidden")
     @ApiResponse(responseCode = "404", description = "User not found")
     @ApiResponse(responseCode = "500", description = "Internal server error")
+    @SecurityRequirement(name = "Bearer Authentication")
     @PutMapping("users/{id}update")
     fun updateUser(
         @Parameter(description = "ID of the user to be updated", required = true)
@@ -79,10 +79,7 @@ class AuthenticationController(
             description = "Request body containing the user details to be updated",
             required = true,
         )
-        @RequestBody request: UpdateUserRequest,
-
-        @Parameter(description = "Authorization token to access the API", required = true)
-        @RequestHeader("Authorization") accessToken: String
+        @RequestBody request: UpdateUserRequest
     ): ResponseEntity<Api<UserResponse>> {
         val userResponse = authenticationService.updateUserById(id, request)
         val response = Api.ok(userResponse, "Update user successful")
@@ -97,13 +94,11 @@ class AuthenticationController(
     @ApiResponse(responseCode = "403", description = "Forbidden")
     @ApiResponse(responseCode = "404", description = "User not found")
     @ApiResponse(responseCode = "500", description = "Internal server error")
+    @SecurityRequirement(name = "Bearer Authentication")
     @DeleteMapping("users/{id}/delete")
     fun deleteUser(
         @Parameter(description = "ID of the user to delete", required = true)
-        @PathVariable id: UUID,
-
-        @Parameter(description = "Authorization token to access the API", required = true)
-        @RequestHeader("Authorization") accessToken: String
+        @PathVariable id: UUID
     ): ResponseEntity<Api<UserResponse>> {
         val userResponse = authenticationService.readUserById(id)
         val response = Api.ok(userResponse, "Delete user successful")
@@ -168,11 +163,9 @@ class AuthenticationController(
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     @ApiResponse(responseCode = "403", description = "Forbidden")
     @ApiResponse(responseCode = "500", description = "Internal server error")
+    @SecurityRequirement(name = "Bearer Authentication")
     @PostMapping("change")
     fun change(
-        @Parameter(description = "Authorization token for user authentication", required = true)
-        @RequestHeader("Authorization") token: String,
-
         @Body(description = "Request body containing new password details", required = true)
         @RequestBody @Validated request: ChangePasswordRequest
     ): ResponseEntity<Api<UserResponse>> {
@@ -187,11 +180,9 @@ class AuthenticationController(
     @ApiResponse(responseCode = "400", description = "Bad request")
     @ApiResponse(responseCode = "403", description = "Unauthorized")
     @ApiResponse(responseCode = "500", description = "Internal server error")
+    @SecurityRequirement(name = "Bearer Authentication")
     @GetMapping("users")
-    fun getAllUsers(
-        @Parameter(description = "Authorization token for accessing the user list", required = true)
-        @RequestHeader("Authorization") accessToken: String
-    ): ResponseEntity<Api<List<UserResponse>>> {
+    fun getAllUsers(): ResponseEntity<Api<List<UserResponse>>> {
         val userResponses = authenticationService.getAllUsers()
         val response = Api.ok(userResponses, "List of users")
         return ResponseEntity.ok(response)

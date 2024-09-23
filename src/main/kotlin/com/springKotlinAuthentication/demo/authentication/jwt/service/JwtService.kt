@@ -5,7 +5,6 @@ import com.springKotlinAuthentication.demo.authentication.entity.User
 import com.springKotlinAuthentication.demo.authentication.jwt.entity.Token
 import io.jsonwebtoken.Claims
 import jakarta.servlet.http.HttpServletRequest
-import org.springframework.security.core.GrantedAuthority
 import org.springframework.security.core.userdetails.UserDetails
 import java.util.*
 import java.util.function.Function
