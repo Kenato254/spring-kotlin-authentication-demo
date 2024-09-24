@@ -1,5 +1,5 @@
 package com.springKotlinAuthentication.demo.authentication.dto.response
 
-data class RegisterResponse(
-    val confirmationToken: String
+data class ConfirmationTokenResponse(
+    val token: String
 )

@@ -8,17 +8,17 @@ import jakarta.validation.constraints.Size
 import java.time.LocalDate
 
 data class RegisterRequest(
-    @field:NotBlank(message = "FirstName can not be blank")
+    @field:NotBlank(message = "FirstName must not be blank")
     val firstName: String?,
 
-    @field:NotBlank(message = "LastName can not be blank")
+    @field:NotBlank(message = "LastName must not be blank")
     val lastName: String?,
 
     @field:Email(regexp = Constant.EMAIL_REGEX)
-    @field:NotBlank(message = "Email is can not be blank")
+    @field:NotBlank(message = "Email is must not be blank")
     val email: String?,
 
-    @field:NotBlank(message = "Password can not be blank")
+    @field:NotBlank(message = "Password must not be blank")
     @field:Size(
         min = 8,
         max = 128,

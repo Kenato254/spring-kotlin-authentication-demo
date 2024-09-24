@@ -29,7 +29,9 @@ class JwtAuthenticationFilter(
         private val EXCLUDED_PATHS: List<String> = mutableListOf(
             "/api/auth/login",
             "/api/auth/register",
-            "/api/auth/confirm/**",
+            "/api/auth/forgot-password",
+            "/api/auth/reset-password",
+            "/api/auth/validate-token/**",
 
             "/actuator/**",
 

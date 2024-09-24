@@ -2,8 +2,8 @@ package com.springKotlinAuthentication.demo.authentication.controller
 
 import com.springKotlinAuthentication.demo.authentication.dto.request.*
 import com.springKotlinAuthentication.demo.authentication.dto.response.Api
+import com.springKotlinAuthentication.demo.authentication.dto.response.ConfirmationTokenResponse
 import com.springKotlinAuthentication.demo.authentication.dto.response.LoginResponse
-import com.springKotlinAuthentication.demo.authentication.dto.response.RegisterResponse
 import com.springKotlinAuthentication.demo.authentication.dto.response.UserResponse
 import com.springKotlinAuthentication.demo.authentication.service.AuthenticationService
 import io.swagger.v3.oas.annotations.Operation
@@ -36,7 +36,7 @@ class AuthenticationController(
     fun register(
         @Body(description = "Request body containing user registration details", required = true)
         @RequestBody @Validated request: RegisterRequest
-    ): ResponseEntity<Api<RegisterResponse>> {
+    ): ResponseEntity<Api<ConfirmationTokenResponse>> {
         val token = authenticationService.registerUser(request)
         val response = Api.ok(token, "Register successful")
         return ResponseEntity.status(HttpStatus.CREATED).body(response)
@@ -107,7 +107,7 @@ class AuthenticationController(
 
 
     @Operation(summary = "Login a user")
-    @ApiResponse(responseCode = "202", description = "Logins a user using email and password")
+    @ApiResponse(responseCode = "200", description = "Logins a user using email and password")
     @ApiResponse(responseCode = "400", description = "Bad request")
     @ApiResponse(responseCode = "404", description = "User not found")
     @ApiResponse(responseCode = "500", description = "Internal server error")
@@ -121,57 +121,73 @@ class AuthenticationController(
     ): ResponseEntity<Api<LoginResponse>> {
         val userResponse = authenticationService.loginUser(request)
         val successResponse = Api.ok(userResponse, "Login successful")
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(successResponse)
+        return ResponseEntity.status(HttpStatus.OK).body(successResponse)
     }
 
 
     @Operation(summary = "Confirm user account")
-    @ApiResponse(responseCode = "202", description = "Confirms the user's account using a provided token")
+    @ApiResponse(responseCode = "200", description = "Confirms the user's account using a provided token")
     @ApiResponse(responseCode = "400", description = "Bad request")
     @ApiResponse(responseCode = "404", description = "User or Token not found")
     @ApiResponse(responseCode = "500", description = "Internal server error")
-    @GetMapping("confirm")
+    @GetMapping("validate-token")
     fun confirm(
         @Parameter(description = "Confirmation token for user account", required = true)
         @RequestParam("token") token: String
     ): ResponseEntity<Api<Unit>> {
         val confirmed = authenticationService.confirmUser(token)
         val successResponse = Api.ok(confirmed, "Confirm account successful")
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(successResponse)
+        return ResponseEntity.status(HttpStatus.OK).body(successResponse)
     }
 
 
-    @Operation(summary = "Reset password", description = "Sends a password reset token to the user's email")
-    @ApiResponse(responseCode = "202", description = "Password reset successful")
+    @Operation(summary = "Forget password", description = "Sends a password reset token to the user's email")
+    @ApiResponse(responseCode = "200", description = "Token reset sent successful")
     @ApiResponse(responseCode = "400", description = "Bad request")
     @ApiResponse(responseCode = "404", description = "User not found")
     @ApiResponse(responseCode = "500", description = "Internal server error")
-    @PostMapping("reset")
-    fun reset(
+    @PostMapping("forgot-password")
+    fun forgotPassword(
         @Body(description = "Request body containing user email for password reset", required = true)
         @RequestBody @Validated request: ResetPasswordRequest
-    ): ResponseEntity<Api<UserResponse>> {
-        val userResponse = authenticationService.resetPassword(request)
-        val response = Api.ok(userResponse, "Reset token sent successfully")
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response)
+    ): ResponseEntity<Api<ConfirmationTokenResponse>> {
+        val confirmationTokenResponse = authenticationService.forgotPassword(request)
+        val response = Api.ok(confirmationTokenResponse, "Reset token sent successfully")
+        return ResponseEntity.ok(response)
+    }
+
+    @Operation(
+        summary = "Reset password",
+        description = "Resets the user's password using the provided new password and token"
+    )
+    @ApiResponse(responseCode = "204", description = "Password reset successful")
+    @ApiResponse(responseCode = "400", description = "Bad request")
+    @ApiResponse(responseCode = "404", description = "User not found")
+    @ApiResponse(responseCode = "500", description = "Internal server error")
+    @PostMapping("reset-password")
+    fun reset(
+        @Body(description = "Request body containing new password details", required = true)
+        @RequestBody @Validated request: PasswordRequest
+    ): ResponseEntity<Unit> {
+        authenticationService.resetPassword(request)
+        return ResponseEntity.noContent().build()
     }
 
 
     @Operation(summary = "Change password", description = "Changes the user's password using the provided token")
-    @ApiResponse(responseCode = "202", description = "Password change successful")
+    @ApiResponse(responseCode = "204", description = "Password change successful")
     @ApiResponse(responseCode = "400", description = "Bad request")
     @ApiResponse(responseCode = "401", description = "Unauthorized")
     @ApiResponse(responseCode = "403", description = "Forbidden")
     @ApiResponse(responseCode = "500", description = "Internal server error")
     @SecurityRequirement(name = "Bearer Authentication")
-    @PostMapping("change")
+    @PostMapping("change-password")
     fun change(
         @Body(description = "Request body containing new password details", required = true)
         @RequestBody @Validated request: ChangePasswordRequest
     ): ResponseEntity<Api<UserResponse>> {
-        val userResponse = authenticationService.changePassword(request)
-        val response = Api.ok(userResponse, "Password change successful")
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(response)
+        authenticationService.changePassword(request)
+        return ResponseEntity.noContent().build()
     }
 
 

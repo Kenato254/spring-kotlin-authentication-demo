@@ -34,7 +34,9 @@ class SecurityConfig(
             // Custom
             "/auth/login",
             "/auth/register",
-            "/auth/confirm/**",
+            "/auth/forgot-password",
+            "/auth/reset-password",
+            "/auth/validate-token/**",
 
             // Health
             "/actuator/**",

@@ -121,7 +121,7 @@ class AuthenticationServiceImplTest {
 
         val result = authenticationService.registerUser(registerRequest)
 
-        assertEquals(expectedToken, result.confirmationToken)
+        assertEquals(expectedToken, result.token)
         verify {
             userRepository.emailExists(registerRequest.email!!)
             userRepository.save(any())

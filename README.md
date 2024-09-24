@@ -23,9 +23,13 @@ This project demonstrates secure, token-based authentication built using Spring 
   `POST /auth/login`  
   Authenticate a user using email and password.
 
-- **Reset Password**  
-  `POST /auth/reset`  
+- **Forgot Password**  
+  `POST /auth/forgot-password`  
   Send a password reset token to the user’s email.
+
+- **Reset Password**  
+  `POST /auth/reset-password`  
+  Reset the password using the provided token.
 
 - **Change Password**  
   `POST /auth/change`  
@@ -48,10 +52,10 @@ This project demonstrates secure, token-based authentication built using Spring 
   `DELETE /auth/users/{id}/delete`  
   Delete a user from the system using their ID.
 
-### Account Confirmation
-- **Confirm Account**  
-  `GET /auth/confirm?token={confirmationToken}`  
-  Confirm a user's account using the token sent to their email.
+### Validate Account Changes
+- **Validate Token**  
+  `GET /auth/validate-token?token={confirmationToken}`  
+  Validates different operations that uses token validation.
 
 ## Installation
 
