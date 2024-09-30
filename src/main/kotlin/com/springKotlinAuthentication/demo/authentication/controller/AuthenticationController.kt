@@ -6,6 +6,7 @@ import com.springKotlinAuthentication.demo.authentication.dto.response.Confirmat
 import com.springKotlinAuthentication.demo.authentication.dto.response.LoginResponse
 import com.springKotlinAuthentication.demo.authentication.dto.response.UserResponse
 import com.springKotlinAuthentication.demo.authentication.service.AuthenticationService
+import com.springKotlinAuthentication.demo.authentication.service.UserService
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.responses.ApiResponse
@@ -24,6 +25,7 @@ import io.swagger.v3.oas.annotations.parameters.RequestBody as Body
 @CrossOrigin(origins = ["*"]) // Allow all origins for anyone to test
 @RequestMapping("auth")
 class AuthenticationController(
+    private val userService: UserService,
     private val authenticationService: AuthenticationService
 ) {
 
@@ -56,7 +58,7 @@ class AuthenticationController(
         @Parameter(description = "ID of the user to retrieve", required = true)
         @PathVariable id: UUID
     ): ResponseEntity<Api<UserResponse>> {
-        val userResponse = authenticationService.readUserById(id)
+        val userResponse = userService.readUserById(id)
         val response = Api.ok(userResponse, "Read user successful")
         return ResponseEntity.ok(response)
     }
@@ -81,7 +83,7 @@ class AuthenticationController(
         )
         @RequestBody request: UpdateUserRequest
     ): ResponseEntity<Api<UserResponse>> {
-        val userResponse = authenticationService.updateUserById(id, request)
+        val userResponse = userService.updateUserById(id, request)
         val response = Api.ok(userResponse, "Update user successful")
         return ResponseEntity.ok(response)
     }
@@ -100,7 +102,7 @@ class AuthenticationController(
         @Parameter(description = "ID of the user to delete", required = true)
         @PathVariable id: UUID
     ): ResponseEntity<Api<UserResponse>> {
-        val userResponse = authenticationService.deleteUserById(id)
+        val userResponse = userService.deleteUserById(id)
         val response = Api.ok(userResponse, "Delete user successful")
         return ResponseEntity.ok(response)
     }
@@ -199,7 +201,7 @@ class AuthenticationController(
     @SecurityRequirement(name = "Bearer Authentication")
     @GetMapping("users")
     fun getAllUsers(): ResponseEntity<Api<List<UserResponse>>> {
-        val userResponses = authenticationService.getAllUsers()
+        val userResponses = userService.retrieveAllUsers()
         val response = Api.ok(userResponses, "List of users")
         return ResponseEntity.ok(response)
     }

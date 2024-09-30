@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Test
 import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.core.Authentication
 import org.springframework.security.core.context.SecurityContextHolder
-import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.test.context.ActiveProfiles
 import java.time.Instant
 import java.time.LocalDate
@@ -49,42 +48,6 @@ class AuthenticationServiceImplTest {
             customUserDetailService,
             confirmationTokenService
         )
-    }
-
-    @Test
-    fun `readUserById should return user response when user is found`() {
-        val userId = UUID.randomUUID()
-        val user = User(
-            id = userId,
-            email = "test@example.com",
-            password = "password",
-            firstName = "Test",
-            lastName = "User",
-            dateOfBirth = LocalDate.of(2000, 1, 1),
-        )
-        val userResponse = UserResponse(
-            userId,
-            user.firstName,
-            user.lastName,
-            user.dateOfBirth.toString(),
-            user.createdAt.toString()
-        )
-
-        every { userRepository.findById(userId) } returns Optional.of(user)
-        val result = authenticationService.readUserById(userId)
-
-        assertEquals(userResponse, result)
-        verify { userRepository.findById(userId) }
-    }
-
-    @Test
-    fun `readUserById should throw UsernameNotFoundException when user not found`() {
-        val userId = UUID.randomUUID()
-        every { userRepository.findById(userId) } returns Optional.empty()
-
-        assertFailsWith<UsernameNotFoundException> {
-            authenticationService.readUserById(userId)
-        }
     }
 
     @Test
@@ -174,9 +137,8 @@ class AuthenticationServiceImplTest {
         mockkObject(UserUtil)
         every { UserUtil.userToUserResponse(user) } returns userResponse
 
-        val result = authenticationService.changePassword(request)
+        authenticationService.changePassword(request)
 
-        assertEquals(userResponse, result)
         verify { userRepository.save(user) }
     }
 
